@@ -2,7 +2,7 @@
 {
     Properties
     {
-        _Color ("Color", Color) = (1,1,1,1)
+        _Color ("Color", Color) = (80,255,255,255)
         _MainTex ("Albedo (RGB)", 2D) = "white" {}
 		_Normal ("Normal Map", 2D) = "normal" {}
 		_ORM ("AO,Roughness,Metallic", 2D) = "orm" {}

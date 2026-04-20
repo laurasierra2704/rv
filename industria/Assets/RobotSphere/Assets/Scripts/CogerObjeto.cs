@@ -1,108 +1,67 @@
-
 using UnityEngine;
-
-public class CogerObjeto : MonoBehaviour
-{
-   
-    public GameObject handPoint;
-
-    private GameObject pickedObject = null;
-
-
-
-
-
-
-    void Update()
-    {
-        if(pickedObject != null)
-        {
-            if (Input.GetKey("r"))
-            {
-                pickedObject.GetComponent<Rigidbody>().useGravity = true;
-                pickedObject.GetComponent<Rigidbody>().isKinematic = false;
-
-                pickedObject.gameObject.transform.SetParent(null);
-                pickedObject = null;
-            }
-        }
-
-
-    }
-
-    private void OnTriggerStay(Collider other)
-    {
-        if (other.gameObject.CompareTag("Objeto"))
-        {
-            if (Input.GetKey("e") && pickedObject == null)
-            {
-                other.GetComponent<Rigidbody>().useGravity = false;
-                other.GetComponent<Rigidbody>().isKinematic = true;
-                other.transform.position = handPoint.transform.position;
-                other.gameObject.transform.SetParent(handPoint.gameObject.transform);
-                pickedObject = other.gameObject;
-            }
-        }
-    }
-
-
-}
-
-/*
-using UnityEngine;
-using System.IO.Ports;
 
 public class CogerObjeto : MonoBehaviour
 {
     public GameObject handPoint;
 
     private GameObject pickedObject = null;
-
-    SerialPort serial = new SerialPort("COM3", 9600); // Cambia COM
-
-    void Start()
-    {
-        if (!serial.IsOpen)
-        {
-            serial.Open();
-        }
-    }
+    private bool justPickedUp = false; // flag para evitar soltar en el mismo frame
 
     void Update()
     {
-        if(pickedObject != null)
+        if (justPickedUp)
         {
-            if (Input.GetKey("r"))
-            {
-                pickedObject.GetComponent<Rigidbody>().useGravity = true;
-                pickedObject.GetComponent<Rigidbody>().isKinematic = false;
+            justPickedUp = false; // resetear al siguiente frame
+            return;
+        }
 
-                pickedObject.transform.SetParent(null);
-                pickedObject = null;
-
-                // 🔴 Enviar señal de apagar motor
-                serial.WriteLine("OFF");
-            }
+        if (Input.GetKeyDown(KeyCode.E) && pickedObject != null)
+        {
+            Soltar();
         }
     }
 
     private void OnTriggerStay(Collider other)
     {
-        if (other.gameObject.CompareTag("Objeto"))
+        if (other.CompareTag("Objeto"))
         {
-            if (Input.GetKey("e") && pickedObject == null)
+            if (Input.GetKeyDown(KeyCode.E) && pickedObject == null)
             {
-                other.GetComponent<Rigidbody>().useGravity = false;
-                other.GetComponent<Rigidbody>().isKinematic = true;
-                other.transform.position = handPoint.transform.position;
-                other.transform.SetParent(handPoint.transform);
-
-                pickedObject = other.gameObject;
-
-                // 🟢 Enviar señal de encender motor
-                serial.WriteLine("ON");
+                Agarrar(other);
             }
         }
     }
+
+    private void Agarrar(Collider other)
+    {
+        Rigidbody rb = other.GetComponent<Rigidbody>();
+        Collider col = other.GetComponent<Collider>();
+
+        rb.velocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
+        rb.useGravity = false;
+        rb.isKinematic = true;
+
+        col.enabled = false;
+
+        other.transform.SetParent(handPoint.transform);
+        other.transform.localPosition = Vector3.zero;
+
+        pickedObject = other.gameObject;
+        justPickedUp = true; // marcar que se acaba de agarrar
+    }
+
+    private void Soltar()
+    {
+        Rigidbody rb = pickedObject.GetComponent<Rigidbody>();
+        Collider col = pickedObject.GetComponent<Collider>();
+
+        pickedObject.transform.SetParent(null);
+
+        rb.useGravity = true;
+        rb.isKinematic = false;
+        col.enabled = true;
+
+        pickedObject = null;
+    }
 }
-*/
